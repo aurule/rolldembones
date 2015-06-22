@@ -1,4 +1,4 @@
-class Die:
+class Plain:
     """Represents a die type.
 
     Attributes:
@@ -7,6 +7,8 @@ class Die:
     + add_roll_threshold - add an extra roll if this die's value is at or above this threshold
     + tally_threshold - increase tally by one if this die's value is at or above this threshold
     """
+
+    default_mode = 'count'
 
     def __init__(self, sides, reroll_threshold = None, add_roll_threshold = None, tally_threshold = None):
         self.sides = sides

@@ -1,1 +1,1 @@
-__all__ = ["plain"]
+__all__ = ["plain", "roll"]
