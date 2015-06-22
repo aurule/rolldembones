@@ -2,6 +2,7 @@
 
 import argparse
 import random
+import dice
 
 class Roller:
     def __init__(self, args):
@@ -101,67 +102,6 @@ class Roller:
 
         return output
 
-class Die:
-    """Represents a die type.
-
-    Attributes:
-    + sides - number of sides of the die
-    + reroll_threshold - replace any die roll if its value is at or below this threshold
-    + add_roll_threshold - add an extra roll if this die's value is at or above this threshold
-    + tally_threshold - increase tally by one if this die's value is at or above this threshold
-    """
-
-    def __init__(self, sides, reroll_threshold = None, add_roll_threshold = None, tally_threshold = None):
-        self.sides = sides
-        self.reroll_threshold = reroll_threshold
-        self.add_roll_threshold = add_roll_threshold
-        self.tally_threshold = tally_threshold
-
-    def set_attributes(self, attrs):
-        """Override existing settings using values from `attrs`
-
-        @param attrs dict Attributes to replace
-        """
-
-        pass
-
-    def reroll(self, value):
-        """Get whether a die with result `value` should be re-rolled
-
-        @param value int Die value
-        """
-
-        if self.reroll_threshold is None:
-            return False
-
-        return value <= self.reroll_threshold
-
-    def add_roll(self, value):
-        """Get whether a roll should be added based on a die with result `value`
-
-        @param value int Die value
-        """
-
-        if self.add_roll_threshold is None:
-            return False
-
-        return value >= self.add_roll_threshold
-
-    def tally(self):
-        """Get whether results from this object should be tallied"""
-
-        return self.tally_threshold is not None
-
-    def apply_tally(self, value):
-        """Convert `value` into a tally, either 1 or 0
-
-        @param value int Die value
-        """
-
-        if value >= self.tally_threshold:
-            return 1
-        return 0
-
 def main():
     roller.do_rolls()
     return
@@ -170,7 +110,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Roll some dice.")
 
     parser.add_argument("-r, --repeat", dest="repeats", type=int, metavar="N", default=1, help="Repeat these rolls N times.")
-    parser.add_argument("-t, --target", dest="target", type=int, metavar="TARGET", default=0, help="Repeat the roll as many times as needed until their sum is TARGET. If the --count option is used as well, TARGET is the number of rolls exceeding that threshold. Additionally, the number of rolls made is printed.")
     parser.add_argument("dice", nargs='*', help="Dice to roll, given in pairs of the number of dice to roll, and the sides those dice have.")
 
     args = parser.parse_args()
