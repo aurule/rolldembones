@@ -1,15 +1,14 @@
 #!/usr/bin/python
 
 import argparse
-import random
 import dice
 
 def main():
-    results = []
-    for (repeat in range(args.repeats)):
-        results.append(roll.get_results())
-
-    # TODO print results
+    for repeat in range(args.repeats):
+        roller.do_roll()
+        results = roller.get_results()
+        for result in results:
+            print ' '.join(map(str, result))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Roll some dice.")
@@ -23,5 +22,5 @@ if __name__ == '__main__':
     if len(args.dice)%2 != 0:
         parser.error("Incorrect number of arguments: Rolls and faces must be paired")
 
-    roll = Roll(args)
+    roller = dice.Roll(args)
     main()
