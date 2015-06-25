@@ -5,8 +5,6 @@ class Roller:
     results = None
 
     def __init__(self, args):
-        self.overrides = dict()
-
         it = iter(args.dice)
         self.dice_conf = zip(it, it)
 
@@ -15,9 +13,9 @@ class Roller:
             dtype = pair[1]
 
             if dtype == 'nwod':
-                self.dice_bunch.append([Nwod() for r in range(dcount)])
+                self.dice_bunch.append([Nwod(args.explode) for r in range(dcount)])
             else:
-                self.dice_bunch.append([Plain(dtype) for r in range(dcount)])
+                self.dice_bunch.append([Plain(dtype, args.explode) for r in range(dcount)])
 
     def __iter__(self):
         return iter(self.results)
@@ -39,7 +37,7 @@ class Roller:
                 die.roll()
 
             for die in die_set:
-                pair_result.append(die.get_result())
+                pair_result.extend(die.get_result())
 
             if die_set[0].default_mode == 'tally':
                 self.results.append(sum(pair_result))
@@ -50,11 +48,18 @@ class Plain:
     """Represents a plain numeric die."""
 
     default_mode = 'spread'
+    children = []
     face = None
+    sides = 0
+    explode = 1
 
-    def __init__(self, sides):
-        self.sides = int(sides)
-        self.explode = self.sides + 1 # never explode by default
+    def __init__(self, new_sides, new_explode = None):
+        self.sides = int(new_sides)
+
+        if new_explode is None:
+            self.explode = self.sides + 1 # never explode by default
+        else:
+            self.explode = new_explode
 
     def roll(self):
         self.face = random.randint(1, self.sides)
@@ -63,8 +68,7 @@ class Plain:
         self.child_results = []
 
         if self.face >= self.explode:
-            child = Plain()
-            # TODO propagate settings
+            child = Plain(self.sides, self.explode)
 
             child.roll()
             self.children.append(child)
@@ -78,23 +82,32 @@ class Plain:
         for child in self.children:
             tally += child.tally()
 
-        return self.face
+        return tally
+
+    def spread(self):
+        if self.face is None:
+            return 0
+
+        # rolls = [self.face] + [child.spread() for child in self.children]
+        rolls = [self.face]
+
+        for child in self.children:
+            rolls.extend(child.spread())
+
+        return rolls
 
     def get_result(self):
         if self.default_mode == 'spread':
-            return self.face
+            return self.spread()
         elif self.default_mode == 'tally':
             return self.tally()
 
 class Nwod(Plain):
     default_mode = 'tally'
-    children = []
     success = 8
-    explode = 10
-    sides = 10
 
-    def __init__(self):
-        pass
+    def __init__(self, new_explode = 10):
+        super().__init__(self, 10, new_explode)
 
     def tally(self):
         if self.face is None:
