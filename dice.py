@@ -54,12 +54,30 @@ class Plain:
 
     def __init__(self, sides):
         self.sides = int(sides)
+        self.explode = self.sides + 1 # never explode by default
 
     def roll(self):
         self.face = random.randint(1, self.sides)
-        return (self.face, self.face, [])
+
+        self.children = []
+        self.child_results = []
+
+        if self.face >= self.explode:
+            child = Plain()
+            # TODO propagate settings
+
+            child.roll()
+            self.children.append(child)
 
     def tally(self):
+        if self.face is None:
+            return 0
+
+        tally = self.face
+
+        for child in self.children:
+            tally += child.tally()
+
         return self.face
 
     def get_result(self):
@@ -73,28 +91,17 @@ class Nwod(Plain):
     children = []
     success = 8
     explode = 10
+    sides = 10
 
     def __init__(self):
         pass
-
-    def roll(self):
-        self.face = random.randint(1, 10)
-
-        self.children = []
-        self.child_results = []
-
-        if self.face >= self.explode:
-            child = Nwod()
-            # TODO propagate settings
-
-            child.roll()
-            self.children.append(child)
 
     def tally(self):
         if self.face is None:
             return 0
 
         tally = int(self.face >= self.success)
+
         for child in self.children:
             tally += child.tally()
 
