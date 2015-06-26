@@ -37,7 +37,10 @@ class Roller:
                 die.roll()
 
             for die in die_set:
-                pair_result.extend(die.get_result())
+                if isinstance(die.get_result(), list):
+                    pair_result.extend(die.get_result())
+                else:
+                    pair_result.append(die.get_result())
 
             if die_set[0].default_mode == 'tally':
                 self.results.append(sum(pair_result))
@@ -107,7 +110,7 @@ class Nwod(Plain):
     success = 8
 
     def __init__(self, new_explode = 10):
-        super().__init__(self, 10, new_explode)
+        super().__init__(10, new_explode)
 
     def tally(self):
         if self.face is None:
