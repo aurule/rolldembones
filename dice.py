@@ -71,7 +71,7 @@ class Plain:
         self.child_results = []
 
         if self.face >= self.explode:
-            child = Plain(self.sides, self.explode)
+            child = self.make_child()
 
             child.roll()
             self.children.append(child)
@@ -105,7 +105,11 @@ class Plain:
         elif self.default_mode == 'tally':
             return self.tally()
 
+    def make_child(self):
+        return Plain(self.sides, self.explode)
+
 class Nwod(Plain):
+    child_class = 'Nwod'
     default_mode = 'tally'
     success = 8
 
@@ -122,3 +126,6 @@ class Nwod(Plain):
             tally += child.tally()
 
         return tally
+
+    def make_child(self):
+        return Nwod(self.explode)
