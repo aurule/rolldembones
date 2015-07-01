@@ -3,21 +3,30 @@ import random
 class Roller:
     dice_bunch = []
     results = None
+    raw_results = None
     mode = None
+    explode = None
 
     def __init__(self, args):
         it = iter(args.dice)
         self.dice_conf = zip(it, it)
-        self.mode = args.mode
+        self.explode = args.explode
+
+        if args.target is None:
+            # use settings as given
+            self.mode = args.mode
+        else:
+            # the target setting overrides the mode in order to work
+            self.mode = 'tally'
 
         for pair in self.dice_conf:
             dcount = int(pair[0])
             dtype = pair[1]
 
             if dtype == 'nwod':
-                self.dice_bunch.append([Nwod(args.explode, args.mode) for r in range(dcount)])
+                self.dice_bunch.append([Nwod(self.explode, self.mode) for r in range(dcount)])
             else:
-                self.dice_bunch.append([Plain(dtype, args.explode, args.mode) for r in range(dcount)])
+                self.dice_bunch.append([Plain(dtype, self.explode, self.mode) for r in range(dcount)])
 
     def __iter__(self):
         return iter(self.results)
@@ -32,6 +41,7 @@ class Roller:
 
     def do_roll(self):
         self.results = []
+        self.raw_results = []
 
         for die_set in self.dice_bunch:
             pair_result = []
@@ -49,6 +59,7 @@ class Roller:
             else:
                 roll_mode = self.mode
 
+            self.raw_results.append(pair_result)
             if roll_mode == 'tally':
                 self.results.append(sum(pair_result))
             else:
