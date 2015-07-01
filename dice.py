@@ -3,19 +3,21 @@ import random
 class Roller:
     dice_bunch = []
     results = None
+    mode = None
 
     def __init__(self, args):
         it = iter(args.dice)
         self.dice_conf = zip(it, it)
+        self.mode = args.mode
 
         for pair in self.dice_conf:
             dcount = int(pair[0])
             dtype = pair[1]
 
             if dtype == 'nwod':
-                self.dice_bunch.append([Nwod(args.explode) for r in range(dcount)])
+                self.dice_bunch.append([Nwod(args.explode, args.mode) for r in range(dcount)])
             else:
-                self.dice_bunch.append([Plain(dtype, args.explode) for r in range(dcount)])
+                self.dice_bunch.append([Plain(dtype, args.explode, args.mode) for r in range(dcount)])
 
     def __iter__(self):
         return iter(self.results)
@@ -42,7 +44,12 @@ class Roller:
                 else:
                     pair_result.append(die.get_result())
 
-            if die_set[0].default_mode == 'tally':
+            if self.mode is None:
+                roll_mode = die_set[0].counting_mode
+            else:
+                roll_mode = self.mode
+
+            if roll_mode == 'tally':
                 self.results.append(sum(pair_result))
             else:
                 self.results.append(pair_result)
@@ -50,19 +57,31 @@ class Roller:
 class Plain:
     """Represents a plain numeric die."""
 
-    default_mode = 'spread'
+    defaults = {
+        'mode': 'spread',
+        'explode': None,
+    }
+    counting_mode = None
     children = []
     face = None
     sides = 0
     explode = 1
 
-    def __init__(self, new_sides, new_explode = None):
+    def __init__(self, new_sides, new_explode = None, forced_mode = None):
         self.sides = int(new_sides)
 
         if new_explode is None:
-            self.explode = self.sides + 1 # never explode by default
+            if self.defaults['explode'] is None:
+                self.explode = self.sides + 1 # never explode by default
+            else:
+                self.explode = self.defaults['explode']
         else:
             self.explode = new_explode
+
+        if forced_mode is None:
+            self.counting_mode = self.defaults['mode']
+        else:
+            self.counting_mode = forced_mode
 
     def roll(self):
         self.face = random.randint(1, self.sides)
@@ -91,7 +110,6 @@ class Plain:
         if self.face is None:
             return 0
 
-        # rolls = [self.face] + [child.spread() for child in self.children]
         rolls = [self.face]
 
         for child in self.children:
@@ -100,21 +118,24 @@ class Plain:
         return rolls
 
     def get_result(self):
-        if self.default_mode == 'spread':
+        if self.counting_mode == 'spread':
             return self.spread()
-        elif self.default_mode == 'tally':
+        elif self.counting_mode == 'tally':
             return self.tally()
 
     def make_child(self):
         return Plain(self.sides, self.explode)
 
 class Nwod(Plain):
+    defaults = {
+        'mode': 'tally',
+        'explode': 10,
+    }
     child_class = 'Nwod'
-    default_mode = 'tally'
     success = 8
 
-    def __init__(self, new_explode = 10):
-        super().__init__(10, new_explode)
+    def __init__(self, new_explode = 10, forced_mode = 'tally'):
+        super().__init__(10, new_explode, forced_mode)
 
     def tally(self):
         if self.face is None:
