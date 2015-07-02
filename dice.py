@@ -175,3 +175,4 @@ class Nwod(Plain):
     def apply_rules(self, dice_bunch):
         pass
 
+        # TODO apply botch
