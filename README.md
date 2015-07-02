@@ -53,6 +53,8 @@ Roll Dem Bones can report die outcomes in two modes, tally and spread.
 
 Every type of die has a default reporting mode, and they can safely be mixed. If you want to force a certain reporting mode, the `--mode {tally, spread}` option lets you do so. Additionally, the `--repeat-until` option *always* uses tally mode.
 
+The `--tally-above T` option changes the behavior of the tally mode. It counts how many dice rolled T or higher, instead of summing the values of the die faces.
+
 ## Repeat and Repeat-Until
 
 These options repeat the set of rolls that were passed to Roll Dem Bones a certain number of times.

@@ -17,9 +17,9 @@ class Roller:
             dtype = pair[1]
 
             if dtype == 'nwod':
-                self.dice_bunch.append([Nwod(args.explode, self.mode, args.rote, args.botch) for r in range(dcount)])
+                self.dice_bunch.append([Nwod(args.explode, self.mode, args.success, args.rote, args.botch) for r in range(dcount)])
             else:
-                self.dice_bunch.append([Plain(dtype, args.explode, self.mode) for r in range(dcount)])
+                self.dice_bunch.append([Plain(dtype, args.explode, self.mode, args.success) for r in range(dcount)])
 
     def __iter__(self):
         return iter(self.results)
@@ -64,14 +64,16 @@ class Plain:
     defaults = {
         'mode': 'spread',
         'explode': None,
+        'success': None,
     }
     counting_mode = None
     children = []
     face = None
     sides = 0
     explode = 1
+    success = None
 
-    def __init__(self, new_sides, new_explode = None, forced_mode = None):
+    def __init__(self, new_sides, new_explode = None, forced_mode = None, success_target = None):
         self.sides = int(new_sides)
 
         if new_explode is None:
@@ -80,6 +82,7 @@ class Plain:
             self.explode = new_explode
 
         self.counting_mode = self.defaults['mode'] if forced_mode is None else forced_mode
+        self.success = self.defaults['success'] if success_target is None else success_target
 
     def roll(self):
         self.face = random.randint(1, self.sides)
@@ -99,7 +102,7 @@ class Plain:
         if self.face is None:
             return 0
 
-        tally = self.face
+        tally = self.face if self.success is None else int(self.face >= self.success)
 
         for child in self.children:
             tally += child.tally()
@@ -138,14 +141,14 @@ class Nwod(Plain):
     defaults = {
         'mode': 'tally',
         'explode': 10,
+        'success': 8,
     }
     child_class = 'Nwod'
-    success = 8
     rote = False
     botch = False
 
-    def __init__(self, new_explode = 10, forced_mode = 'tally', rote = False, botch = False):
-        super().__init__(10, new_explode, forced_mode)
+    def __init__(self, new_explode = 10, forced_mode = 'tally', success_target = 8, rote = False, botch = False):
+        super().__init__(10, new_explode, forced_mode, success_target)
         self.rote = rote
         self.botch = botch
 
@@ -157,20 +160,8 @@ class Nwod(Plain):
 
         super().roll_children()
 
-
-    def tally(self):
-        if self.face is None:
-            return 0
-
-        tally = int(self.face >= self.success)
-
-        for child in self.children:
-            tally += child.tally()
-
-        return tally
-
     def make_child(self):
-        return Nwod(self.explode, self.counting_mode)
+        return Nwod(self.explode, self.counting_mode, self.success)
 
     def apply_rules(self, dice_bunch):
         pass
