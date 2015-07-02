@@ -20,7 +20,11 @@ class Roller:
             if dtype == 'nwod':
                 self.dice_bunch.append([Nwod(args.explode, self.mode, args.success, args.rote, args.botch) for r in range(dcount)])
             else:
-                self.dice_bunch.append([Plain(dtype, args.explode, self.mode, args.success) for r in range(dcount)])
+                try:
+                    dfaces = int(dtype)
+                    self.dice_bunch.append([Plain(dfaces, args.explode, self.mode, args.success) for r in range(dcount)])
+                except ValueError:
+                    raise UnknownDieTypeException(dtype)
 
     def __iter__(self):
         return iter(self.results)

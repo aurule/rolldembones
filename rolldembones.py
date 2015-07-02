@@ -2,31 +2,42 @@
 
 import argparse
 import dice
+import logging
+logger = logging.getLogger()
 
 def main():
-    roller = dice.Roller(args)
-    if args.target is None:
-        # repeat as requested
-        repeats = args.repeats or 1
-        for repeat in range(repeats):
-            roller.do_roll()
-            for result in roller:
-                if isinstance(result, list):
-                    print(' '.join(map(str, result)))
-                else:
-                    print(result)
-    else:
-        # repeat until the target is met
-        tally = 0
-        rolls = 0
-        while tally < args.target and (args.repeats is None or rolls < args.repeats):
-            roller.do_roll()
-            tally += sum(roller.get_results())
-            rolls += 1
+    try:
+        roller = dice.Roller(args)
+        if args.target is None:
+            # repeat as requested
+            repeats = args.repeats or 1
+            for repeat in range(repeats):
+                roller.do_roll()
+                for result in roller:
+                    if isinstance(result, list):
+                        print(' '.join(map(str, result)))
+                    else:
+                        print(result)
+        else:
+            # repeat until the target is met
+            tally = 0
+            rolls = 0
+            while tally < args.target and (args.repeats is None or rolls < args.repeats):
+                roller.do_roll()
+                tally += sum(roller.get_results())
+                rolls += 1
 
-        print("Target:", args.target)
-        print(" Rolls:", rolls)
-        print(" Tally:", tally)
+            print("Target:", args.target)
+            print(" Rolls:", rolls)
+            print(" Tally:", tally)
+
+        return 0
+    except dice.UnknownDieTypeException as e:
+        logger.error("Unknown die type '{0}'".format(e))
+        return 1
+    except BaseException:
+        logger.info("user stop")
+        return 1
 
 if __name__ == '__main__':
     version = "0.5"
