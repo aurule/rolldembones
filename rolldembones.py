@@ -34,9 +34,9 @@ if __name__ == '__main__':
 
     parser.add_argument("-r", "--repeat", dest="repeats", metavar="N", type=int, default=None, help="Repeat these rolls N times. When used alongside -u, a maximum of N rolls will be made.")
     parser.add_argument("-u", "--repeat-until", dest="target", metavar="T", type=int, default=None, help="Repeat these rolls as many times as needed until all their tallies combined match or exceed T. Overrides -m.")
-    parser.add_argument("-e", "--roll-again", dest="explode", metavar="T", type=int, default=None, help="Any die whose roll matches or exceeds T is counted and rolled again. Setting T to 1 or lower disables re-rolls.")
     parser.add_argument("-m", "--mode", dest="mode", type=str, default=None, choices=['spread', 'tally'], help="Force all rolls to use the given MODE instead of each roll's default. Ignored when using -u.")
     parser.add_argument("-t", "--tally-above", dest="success", metavar="T", type=int, default=None, help="Any die whose roll matches or exceeds T adds 1 to the tally.")
+    parser.add_argument("-e", "--roll-again", dest="explode", metavar="T", type=int, default=None, help="Any die whose roll matches or exceeds T is counted and rolled again. Setting T to 1 or lower disables re-rolls.")
     parser.add_argument("--version", action="version", version="%(prog)s v{0}".format(version))
     parser.add_argument("dice", nargs='*', help="Dice to roll, given in pairs of the number of dice to roll, and the sides those dice have.")
 
