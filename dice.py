@@ -1,4 +1,5 @@
 import random
+import copy
 
 class Roller:
     dice_bunch = []
@@ -41,14 +42,14 @@ class Roller:
             for die in die_set:
                 die.roll()
 
-            for die in die_set:
+            die_type = die_set[0]
+            dice_transformed = die_type.apply_rules(die_set)
+
+            for die in dice_transformed:
                 if isinstance(die.get_result(), list):
                     pair_result.extend(die.get_result())
                 else:
                     pair_result.append(die.get_result())
-
-            die_type = die_set[0]
-            die_type.apply_rules(die_set)
 
             roll_mode = die_type.counting_mode if self.mode is None else self.mode
 
@@ -129,13 +130,13 @@ class Plain:
     def make_child(self):
         return Plain(self.sides, self.explode, self.counting_mode)
 
-    def apply_rules(self, dice_bunch):
+    def apply_rules(self, die_set):
         """Used to apply special die-type-specific rules to a group of rolled dice objects.
 
         Intended to be overridden by subclasses.
         """
 
-        pass
+        return die_set
 
 class Nwod(Plain):
     defaults = {
@@ -160,10 +161,25 @@ class Nwod(Plain):
 
         super().roll_children()
 
+    def tally(self):
+        if self.botch and self.face == 1:
+            return -1
+
+        super().tally()
+
     def make_child(self):
         return Nwod(self.explode, self.counting_mode, self.success)
 
-    def apply_rules(self, dice_bunch):
-        pass
+    def apply_rules(self, die_set):
+        # skip if we don't need to apply the botch rules
+        if not self.botch:
+            return die_set
 
-        # TODO apply botch
+        # botch rules are destructive, so we need to operate on a
+        new_set = copy.deepcopy(die_set)
+
+        # TODO
+        #
+        # look up how to proceed
+
+        return new_set
