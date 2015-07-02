@@ -165,7 +165,7 @@ class Nwod(Plain):
         if self.botch and self.face == 1:
             return -1
 
-        super().tally()
+        return super().tally()
 
     def make_child(self):
         return Nwod(self.explode, self.counting_mode, self.success)
