@@ -48,6 +48,7 @@ if __name__ == '__main__':
     parser.add_argument("-m", "--mode", dest="mode", type=str, default=None, choices=['spread', 'tally'], help="Force all rolls to use the given MODE instead of each roll's default. Ignored when using -u.")
     parser.add_argument("-t", "--tally-above", dest="success", metavar="T", type=int, default=None, help="Any die whose roll matches or exceeds T adds 1 to the tally.")
     parser.add_argument("-e", "--roll-again", dest="explode", metavar="T", type=int, default=None, help="Any die whose roll matches or exceeds T is counted and rolled again. Setting T to 1 or lower disables re-rolls.")
+    parser.add_argument("-s", "--sum-all", dest="aggregate", action="store_true", default=False, help="Display the sum of all rolls in each repetition. Incompatable with -u.")
     parser.add_argument("--version", action="version", version="%(prog)s v{0}".format(version))
     parser.add_argument("dice", nargs='*', help="Dice to roll, given in pairs of the number of dice to roll, and the sides those dice have.")
 
