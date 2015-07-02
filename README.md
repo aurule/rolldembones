@@ -90,3 +90,10 @@ The `nwod` die type uses the dice rules laid out in the *New World of Darkness* 
 | -b, --botch | Each die that rolls a 1 cancels out the highest success die (8-10) before re-rolls are made. If a 1 die cannot cancel a success die, it counts instead as a negative tally. |
 
 If both `--rote` and `--botch` are used, the Rote rule is applied first.
+
+## Fudge (fudge, fate)
+
+The `fudge` or `fate` die type replicates the mechanics of [Fudge dice](https://en.wikipedia.org/wiki/Fudge_%28role-playing_game_system%29#Fudge_dice):
+
+* 6 sides, numbered -, -, blank, blank, +, +
+* Uses tally mode by default

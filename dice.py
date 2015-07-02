@@ -19,6 +19,8 @@ class Roller:
 
             if dtype == 'nwod':
                 self.dice_bunch.append([Nwod(args.explode, self.mode, args.success, args.rote, args.botch) for r in range(dcount)])
+            elif dtype in ['fudge', 'fate']:
+                self.dice_bunch.append([Fudge(args.explode, self.mode, args.success) for r in range(dcount)])
             else:
                 try:
                     dfaces = int(dtype)
@@ -187,3 +189,24 @@ class Nwod(Plain):
         # look up how to proceed
 
         return new_set
+
+class Fudge(Plain):
+    defaults = {
+        'mode': 'tally',
+        'explode': None,
+        'success': None,
+    }
+
+    def __init__(self, new_explode = 10, forced_mode = 'tally', success_target = 8):
+        super().__init__(10, new_explode, forced_mode, success_target)
+
+    def roll(self):
+        # Six sides of -1, -1, 0, 0, +1, +1 reduce trivially to three sides of -1, 0, +1. So that's what we use.
+        self.face = random.randint(-1, 1)
+        super().roll_children()
+
+    def make_child(self):
+        return Fudge(self.explode, self.counting_mode, self.success)
+
+class UnknownDieTypeException(Exception):
+    """Unrecognized die type"""
