@@ -41,7 +41,7 @@ Here are some examples that show ways to roll dice using Roll Dem Bones. For ful
 
 # Features
 
-Roll Dem Bones has a number of command-line options to modify the dice individually and in aggregate.
+Roll Dem Bones has a number of command-line options.
 
 ## Reporting Mode
 
@@ -53,7 +53,7 @@ Roll Dem Bones can report die outcomes in two modes, tally and spread.
 
 Every type of die has a default reporting mode, and they can safely be mixed. If you want to force a certain reporting mode, the `--mode {tally, spread}` option lets you do so. Additionally, the `--repeat-until` option *always* uses tally mode.
 
-The `--tally-above T` option changes the behavior of the tally mode. It counts how many dice rolled T or higher, instead of summing the values of the die faces.
+The `--tally-above T` option changes the behavior of tally mode. It counts how many dice rolled `T` or higher, instead of summing the values of the die faces. Unless `--mode tally` is also used, the effects of Tally-Above are only applied to die types which use tally mode by default.
 
 ## Repeat and Repeat-Until
 
@@ -67,15 +67,15 @@ When `--repeat N` is used alongside Repeat-Until, Roll Dem Bones will not make m
 
 ## Adding Dice
 
-The `--roll-again T` option adds a die every time a die rolls `T` or higher.
+The `--roll-again T` option adds a new die to the roll on every roll of `T` or higher.
 
 # Die Types
 
-Each die type represents a specific set of dice rules that somehow differ from rolling a normal, numeric die. Below are explanations of the built-in die types in Roll Dem Bones.
+Each die type encapsulates a specific set of dice rules that differ from rolling a normal, numeric die. This can mean setting new defaults for standard behaviors, adding or changing mechanics, and adding special options. Below are explanations of the built-in die types in Roll Dem Bones.
 
 ## New World of Darkness (nwod)
 
-The nwod die type uses the die rolling rules laid out in the *New World of Darkness* rulebook. These dice have the following properties:
+The `nwod` die type uses the dice rules laid out in the *New World of Darkness* rulebook. These dice have the following properties:
 
 * 10 sides, numbered 1 through 10
 * Roll again on a 10
@@ -86,7 +86,7 @@ The nwod die type uses the die rolling rules laid out in the *New World of Darkn
 
 | Option | Effect |
 |--------|---------|
-| -o, --rote | Each of the dice in the initial pool that rolls a 1-7 is automatically rolled again before normal re-rolls are made. |
+| -o, --rote | Each die in the initial pool that rolls a 1-7 is automatically re-rolled before new dice are added to the pool. |
 | -b, --botch | Each die that rolls a 1 cancels out the highest success die (8-10) before re-rolls are made. If a 1 die cannot cancel a success die, it counts instead as a negative tally. |
 
-If both `--rote` and `--botch` are used, the rote rule is applied first.
+If both `--rote` and `--botch` are used, the Rote rule is applied first.
