@@ -5,28 +5,21 @@ class Roller:
     results = None
     raw_results = None
     mode = None
-    explode = None
 
     def __init__(self, args):
         it = iter(args.dice)
         self.dice_conf = zip(it, it)
-        self.explode = args.explode
 
-        if args.target is None:
-            # use settings as given
-            self.mode = args.mode
-        else:
-            # the target setting overrides the mode in order to work
-            self.mode = 'tally'
+        self.mode = args.mode if args.target is None else 'tally'
 
         for pair in self.dice_conf:
             dcount = int(pair[0])
             dtype = pair[1]
 
             if dtype == 'nwod':
-                self.dice_bunch.append([Nwod(self.explode, self.mode) for r in range(dcount)])
+                self.dice_bunch.append([Nwod(args.explode, self.mode, args.rote, args.botch) for r in range(dcount)])
             else:
-                self.dice_bunch.append([Plain(dtype, self.explode, self.mode) for r in range(dcount)])
+                self.dice_bunch.append([Plain(dtype, args.explode, self.mode) for r in range(dcount)])
 
     def __iter__(self):
         return iter(self.results)
@@ -54,15 +47,15 @@ class Roller:
                 else:
                     pair_result.append(die.get_result())
 
-            if self.mode is None:
-                roll_mode = die_set[0].counting_mode
-            else:
-                roll_mode = self.mode
+            die_type = die_set[0]
+            die_type.apply_rules(die_set)
+
+            roll_mode = die_type.counting_mode if self.mode is None else self.mode
 
             self.raw_results.append(pair_result)
             if roll_mode == 'tally':
                 self.results.append(sum(pair_result))
-            else:
+            elif roll_mode == 'spread':
                 self.results.append(pair_result)
 
 class Plain:
@@ -82,21 +75,17 @@ class Plain:
         self.sides = int(new_sides)
 
         if new_explode is None:
-            if self.defaults['explode'] is None:
-                self.explode = self.sides + 1 # never explode by default
-            else:
-                self.explode = self.defaults['explode']
+            self.explode = self.sides + 1 if self.defaults['explode'] is None else self.defaults['explode']
         else:
             self.explode = new_explode
 
-        if forced_mode is None:
-            self.counting_mode = self.defaults['mode']
-        else:
-            self.counting_mode = forced_mode
+        self.counting_mode = self.defaults['mode'] if forced_mode is None else forced_mode
 
     def roll(self):
         self.face = random.randint(1, self.sides)
+        self.roll_children()
 
+    def roll_children(self):
         self.children = []
         self.child_results = []
 
@@ -135,7 +124,15 @@ class Plain:
             return self.tally()
 
     def make_child(self):
-        return Plain(self.sides, self.explode)
+        return Plain(self.sides, self.explode, self.counting_mode)
+
+    def apply_rules(self, dice_bunch):
+        """Used to apply special die-type-specific rules to a group of rolled dice objects.
+
+        Intended to be overridden by subclasses.
+        """
+
+        pass
 
 class Nwod(Plain):
     defaults = {
@@ -144,9 +141,22 @@ class Nwod(Plain):
     }
     child_class = 'Nwod'
     success = 8
+    rote = False
+    botch = False
 
-    def __init__(self, new_explode = 10, forced_mode = 'tally'):
+    def __init__(self, new_explode = 10, forced_mode = 'tally', rote = False, botch = False):
         super().__init__(10, new_explode, forced_mode)
+        self.rote = rote
+        self.botch = botch
+
+    def roll(self):
+        self.face = random.randint(1, self.sides)
+
+        if self.rote and self.face < self.success:
+            self.face = random.randint(1, self.sides)
+
+        super().roll_children()
+
 
     def tally(self):
         if self.face is None:
@@ -160,4 +170,8 @@ class Nwod(Plain):
         return tally
 
     def make_child(self):
-        return Nwod(self.explode)
+        return Nwod(self.explode, self.counting_mode)
+
+    def apply_rules(self, dice_bunch):
+        pass
+
