@@ -55,6 +55,10 @@ Every type of die has a default reporting mode, and they can safely be mixed. If
 
 The `--tally-above T` option changes the behavior of tally mode. It counts how many dice rolled `T` or higher, instead of summing the values of the die faces. Unless `--mode tally` is also used, the effects of Tally-Above are only applied to die types which use tally mode by default.
 
+### Show Total Sum
+
+The `--sum-all` flag adds a line to the end of the output of each repetition which displays the total sum of all dice rolled in that repetition. It adds up the value of each die based on the die's reporting mode.
+
 ## Repeat and Repeat-Until
 
 These options repeat the set of rolls that were passed to Roll Dem Bones a certain number of times.
@@ -72,6 +76,10 @@ The `--roll-again T` option adds a new die to the roll on every roll of `T` or h
 # Die Types
 
 Each die type encapsulates a specific set of dice rules that differ from rolling a normal, numeric die. This can mean setting new defaults for standard behaviors, adding or changing mechanics, and adding special options. Below are explanations of the built-in die types in Roll Dem Bones.
+
+## Plain
+
+This die type represents a basic numeric die.
 
 ## New World of Darkness (nwod)
 
