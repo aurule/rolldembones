@@ -89,7 +89,17 @@ class Plain:
             self.explode = new_explode
 
         self.counting_mode = self.defaults['mode'] if forced_mode is None else forced_mode
-        self.success = self.defaults['success'] if success_target is None else success_target
+
+        if success_target is None:
+            if self.defaults['success'] is None:
+                # tally on our highest number unless the default has been overridden by a subclass
+                self.success = self.sides
+            else:
+                # use the default set by a subclass
+                self.success = self.defaults['success']
+        else:
+            # use the passed target for successes
+            self.success = success_target
 
     def roll(self):
         self.face = random.randint(1, self.sides)

@@ -79,7 +79,9 @@ Each die type encapsulates a specific set of dice rules that differ from rolling
 
 ## Plain
 
-This die type represents a basic numeric die.
+This die type represents a basic numeric die. Plain dice are automatically used when the die type is a number, representing number of sides for those diec.
+
+Plain dice use spread mode by default. When tally mode is forced, they count 1 whenever the highest face is rolled.
 
 ## New World of Darkness (nwod)
 
