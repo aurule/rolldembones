@@ -13,17 +13,27 @@ def main():
             repeats = args.repeats or 1
             for repeat in range(repeats):
                 roller.do_roll()
+                total = 0
                 for result in roller:
                     if isinstance(result, list):
+                        total += sum(result)
                         print(' '.join(map(str, result)))
                     else:
                         print(result)
+                        total += result
+                if args.aggregate:
+                    print("Total:", total)
         else:
             # repeat until the target is met
+            # special mode: repeat until the target is met
             tally = 0
             rolls = 0
+            if args.aggregate:
+                print("Roll totals:")
             while tally < args.target and (args.repeats is None or rolls < args.repeats):
                 roller.do_roll()
+                if args.aggregate:
+                    print('', sum(roller.get_results()))
                 tally += sum(roller.get_results())
                 rolls += 1
 
