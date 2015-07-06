@@ -14,6 +14,8 @@ def main():
             for repeat in range(repeats):
                 roller.do_roll()
                 total = 0
+                if args.debug:
+                    print(roller.raw_results)
                 for result in roller:
                     if isinstance(result, list):
                         total += sum(result)
@@ -24,7 +26,6 @@ def main():
                 if args.aggregate:
                     print("Total:", total)
         else:
-            # repeat until the target is met
             # special mode: repeat until the target is met
             tally = 0
             rolls = 0
@@ -32,6 +33,9 @@ def main():
                 print("Roll totals:")
             while tally < args.target and (args.repeats is None or rolls < args.repeats):
                 roller.do_roll()
+                if args.debug:
+                    endchar = ':' if args.aggregate else "\n"
+                    print(roller.raw_results, end=endchar)
                 if args.aggregate:
                     print('', sum(roller.get_results()))
                 tally += sum(roller.get_results())
@@ -53,12 +57,13 @@ if __name__ == '__main__':
     version = "0.5"
     parser = argparse.ArgumentParser(prog="Roll Dem Bones", description="Roll some dice.")
 
-    parser.add_argument("-r", "--repeat", dest="repeats", metavar="N", type=int, default=None, help="Repeat these rolls N times. When used alongside -u, a maximum of N rolls will be made.")
-    parser.add_argument("-u", "--repeat-until", dest="target", metavar="T", type=int, default=None, help="Repeat these rolls as many times as needed until all their tallies combined match or exceed T. Overrides -m.")
-    parser.add_argument("-m", "--mode", dest="mode", type=str, default=None, choices=['spread', 'tally'], help="Force all rolls to use the given MODE instead of each roll's default. Ignored when using -u.")
-    parser.add_argument("-t", "--tally-above", dest="success", metavar="T", type=int, default=None, help="Any die whose roll matches or exceeds T adds 1 to the tally.")
-    parser.add_argument("-e", "--roll-again", dest="explode", metavar="T", type=int, default=None, help="Any die whose roll matches or exceeds T is counted and rolled again. Setting T to 1 or lower disables re-rolls.")
-    parser.add_argument("-s", "--sum-all", dest="aggregate", action="store_true", default=False, help="Display the sum of all rolls in each repetition. Incompatable with -u.")
+    parser.add_argument("-r", "--repeat", dest="repeats", metavar="N", type=int, default=None, help="Repeat these rolls %(metavar)s times. When used alongside -u, a maximum of %(metavar)s rolls will be made.")
+    parser.add_argument("-u", "--repeat-until", dest="target", metavar="T", type=int, default=None, help="Repeat these rolls as many times as needed until all their tallies combined match or exceed %(metavar)s. Overrides -m.")
+    parser.add_argument("-m", "--mode", dest="mode", type=str, default=None, choices=['spread', 'tally'], help="Force all rolls to use the given mode instead of each roll's default. Ignored when using -u.")
+    parser.add_argument("-t", "--tally-above", dest="success", metavar="T", type=int, default=None, help="Any die whose roll matches or exceeds %(metavar)s adds 1 to the roll's tally. Ignored except for dice whose mode is 'tally', either by default or from the -m argument.")
+    parser.add_argument("-e", "--roll-again", dest="explode", metavar="T", type=int, default=None, help="Any die whose roll matches or exceeds %(metavar)s is counted and rolled again.")
+    parser.add_argument("-s", "--sum-all", dest="aggregate", action="store_true", default=False, help="Display the sum of all rolls in each repetition.")
+    parser.add_argument("--debug", dest="debug", action="store_true", default=False, help="Show the raw die rolls in each repetition")
     parser.add_argument("--version", action="version", version="%(prog)s v{0}".format(version))
     parser.add_argument("dice", nargs='*', help="Dice to roll, given in pairs of the number of dice to roll, and the sides those dice have.")
 
