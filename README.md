@@ -79,9 +79,11 @@ Each die type encapsulates a specific set of dice rules that differ from rolling
 
 ## Plain
 
-This die type represents a basic numeric die. Plain dice are automatically used when the die type is a number, representing number of sides for those diec.
+This die type represents a simple numeric die. Plain dice are automatically used when the die type is a number. Plain dice have these properties:
 
-Plain dice use spread mode by default. When tally mode is forced, they count 1 whenever the highest face is rolled.
+* N sides, numbered 1 through N
+* Use spread mode by default
+* Tally one success on a roll of N when tally mode is forced
 
 ## New World of Darkness (nwod)
 
@@ -90,7 +92,7 @@ The `nwod` die type uses the dice rules laid out in the *New World of Darkness* 
 * 10 sides, numbered 1 through 10
 * Roll again on a 10
 * Tally one "success" on a roll of 8, 9, or 10
-* Uses tally mode by default, tallying 1 per success
+* Use tally mode by default, tallying 1 per success
 
 **Special Options:**
 
@@ -106,4 +108,5 @@ If both `--rote` and `--botch` are used, the Rote rule is applied first.
 The `fudge` (or `fate`) die type replicates the mechanics of [Fudge dice](https://en.wikipedia.org/wiki/Fudge_%28role-playing_game_system%29#Fudge_dice):
 
 * 6 sides, numbered -, -, blank, blank, +, +
-* Uses tally mode by default
+* Increase or decrease the tally by the face value (-1, 0, or +1)
+* Use tally mode by default

@@ -65,8 +65,11 @@ class Roller:
             elif roll_mode == 'spread':
                 self.results.append(pair_result)
 
-class Plain:
-    """Represents a plain numeric die."""
+class Die:
+    """Base dice class
+
+    This class can technically be used on its own, but it's intended to be subclassed to create specific die types.
+    """
 
     defaults = {
         'mode': 'spread',
@@ -90,16 +93,7 @@ class Plain:
 
         self.counting_mode = self.defaults['mode'] if forced_mode is None else forced_mode
 
-        if success_target is None:
-            if self.defaults['success'] is None:
-                # tally on our highest number unless the default has been overridden by a subclass
-                self.success = self.sides
-            else:
-                # use the default set by a subclass
-                self.success = self.defaults['success']
-        else:
-            # use the passed target for successes
-            self.success = success_target
+        self.success = self.defaults['success'] if success_target is None else success_target
 
     def roll(self):
         self.face = random.randint(1, self.sides)
@@ -147,14 +141,24 @@ class Plain:
         return Plain(self.sides, self.explode, self.counting_mode)
 
     def apply_rules(self, die_set):
-        """Used to apply special die-type-specific rules to a group of rolled dice objects.
+        """Apply special die-type-specific post processing to a group of dice objects.
 
         Intended to be overridden by subclasses.
         """
 
         return die_set
 
-class Nwod(Plain):
+class Plain(Die):
+    """Represents a plain numeric die."""
+
+    def __init__(self, new_sides, new_explode = None, forced_mode = None, success_target = None):
+        super().__init__(new_sides, new_explode, forced_mode, success_target)
+
+        # tally on our highest number by default
+        if self.success is None:
+            self.success = self.sides
+
+class Nwod(Die):
     defaults = {
         'mode': 'tally',
         'explode': 10,
@@ -186,20 +190,23 @@ class Nwod(Plain):
     def make_child(self):
         return Nwod(self.explode, self.counting_mode, self.success)
 
-class Fudge(Plain):
+class Fudge(Die):
     defaults = {
         'mode': 'tally',
         'explode': None,
         'success': None,
     }
 
-    def __init__(self, new_explode = 10, forced_mode = 'tally', success_target = 8):
-        super().__init__(10, new_explode, forced_mode, success_target)
+    def __init__(self, new_explode = None, forced_mode = 'tally', success_target = None):
+        super().__init__(3, new_explode, forced_mode, success_target)
 
     def roll(self):
         # Six sides of -1, -1, 0, 0, +1, +1 reduce trivially to three sides of -1, 0, +1. So that's what we use.
         self.face = random.randint(-1, 1)
         super().roll_children()
+
+    def tally(self):
+        return self.face
 
     def make_child(self):
         return Fudge(self.explode, self.counting_mode, self.success)
