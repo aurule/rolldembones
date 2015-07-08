@@ -186,20 +186,6 @@ class Nwod(Plain):
     def make_child(self):
         return Nwod(self.explode, self.counting_mode, self.success)
 
-    def apply_rules(self, die_set):
-        # skip if we don't need to apply the botch rules
-        if not self.botch:
-            return die_set
-
-        # botch rules are destructive, so we need to operate on a
-        new_set = copy.deepcopy(die_set)
-
-        # TODO
-        #
-        # look up how to proceed
-
-        return new_set
-
 class Fudge(Plain):
     defaults = {
         'mode': 'tally',
