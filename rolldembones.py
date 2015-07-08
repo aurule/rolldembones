@@ -7,6 +7,10 @@ logger = logging.getLogger()
 
 def main():
     try:
+        # store table lines for later use, if supplied
+        if args.tablefile is not None:
+            tablelines = args.tablefile.readlines()
+
         roller = dice.Roller(args)
         if args.target is None:
             # repeat as requested
@@ -19,14 +23,27 @@ def main():
                 for result in roller:
                     if isinstance(result, list):
                         total += sum(result)
-                        print(' '.join(map(str, result)))
+
+                        # print lines from table if supplied
+                        if args.tablefile is not None:
+                            for num in result:
+                                print(num, tablelines[num-1].rstrip(), sep=': ')
+                        else:
+                            print(' '.join(map(str, result)))
                     else:
-                        print(result)
                         total += result
+
+                        # print lines from table if supplied
+                        if args.tablefile is not None:
+                            print(result, tablelines[result].rstrip(), sep=': ')
+                        else:
+                            print(result)
+
+                # print out the total if requested
                 if args.aggregate:
                     print("Total:", total)
         else:
-            # special mode: repeat until the target is met
+            # repeat until the target is met
             tally = 0
             rolls = 0
             if args.aggregate:
@@ -54,7 +71,7 @@ def main():
         return 1
 
 if __name__ == '__main__':
-    version = "0.5"
+    version = "0.9"
     parser = argparse.ArgumentParser(prog="Roll Dem Bones", description="Roll some dice.")
 
     parser.add_argument("-r", "--repeat", dest="repeats", metavar="N", type=int, default=None, help="Repeat these rolls %(metavar)s times. When used alongside -u, a maximum of %(metavar)s rolls will be made.")
@@ -63,6 +80,7 @@ if __name__ == '__main__':
     parser.add_argument("-t", "--tally-above", dest="success", metavar="T", type=int, default=None, help="Any die whose roll matches or exceeds %(metavar)s adds 1 to the roll's tally. Ignored except for dice whose mode is 'tally', either by default or from the -m argument.")
     parser.add_argument("-e", "--roll-again", dest="explode", metavar="T", type=int, default=None, help="Any die whose roll matches or exceeds %(metavar)s is counted and rolled again.")
     parser.add_argument("-s", "--sum-all", dest="aggregate", action="store_true", default=False, help="Display the sum of all rolls in each repetition.")
+    parser.add_argument("-l", "--table", dest="tablefile", metavar="FILE", type=argparse.FileType('r'), default=None, help="Print the line of %(metavar)s that corresponds to the rolled dice faces. Ignored when using -u.")
     parser.add_argument("--debug", dest="debug", action="store_true", default=False, help="Show the raw die rolls in each repetition")
     parser.add_argument("--version", action="version", version="%(prog)s v{0}".format(version))
     parser.add_argument("dice", nargs='*', help="Dice to roll, given in pairs of the number of dice to roll, and the sides those dice have.")

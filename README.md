@@ -38,6 +38,7 @@ Here are some examples that show ways to roll dice using Roll Dem Bones. For ful
 
 * 6d10 three times in a row: `roll 6 10 --repeat 3` or `roll 6 10 -r 3`
 * 2d6 as many times as needed until they sum to 42: `roll 2 6 --repeat-until 42` or `roll 2 6 -u 42`
+* 1d100 to get a random magical effect: `roll 1 100 --table effects.txt` or `roll 1 100 -l effects.txt`
 
 # Features
 
@@ -72,6 +73,10 @@ When `--repeat N` is used alongside Repeat-Until, Roll Dem Bones will not make m
 ## Adding Dice
 
 The `--roll-again T` option adds a new die to the roll on every roll of `T` or higher.
+
+## Lines from a File
+
+The `--table FILE` option makes it easy to use random generator charts with Roll Dem Bones. When used, the result of each die is shown alongside the corresponding line from `FILE` (1 is the first line, 2 is the second line, etc.). In tally mode, the line shown corresponds with the final tally number (0 is the first line, 1 is the second, etc.). It doesn't work with Roll-Until.
 
 # Die Types
 
