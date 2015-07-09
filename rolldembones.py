@@ -71,7 +71,7 @@ def main():
         return 1
 
 if __name__ == '__main__':
-    version = "0.9"
+    version = "1.0b1"
     parser = argparse.ArgumentParser(prog="Roll Dem Bones", description="Roll some dice.")
 
     parser.add_argument("-r", "--repeat", dest="repeats", metavar="N", type=int, default=None, help="Repeat these rolls %(metavar)s times. When used alongside -u, a maximum of %(metavar)s rolls will be made.")
