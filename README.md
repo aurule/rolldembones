@@ -31,34 +31,21 @@ Here are some examples that show ways to roll dice using Roll Dem Bones. For ful
 
 `roll <count> <sides or type> [<options>]`
 
-* 6d8, sum the total: `roll 6 8 --mode tally` or `roll 6 8 -m tally`
+* 6d8, sum the total: `roll 6 8 --sum` or `roll 6 8 -s`
 * 4d6, re-roll on a 6: `roll 4 6 --reroll 6` or `roll 4 6 -e 6`
 
 ## Convenience options
 
 * 6d10 three times in a row: `roll 6 10 --repeat 3` or `roll 6 10 -r 3`
 * 2d6 as many times as needed until they sum to 42: `roll 2 6 --repeat-until 42` or `roll 2 6 -u 42`
-* 1d100 to get a random magical effect: `roll 1 100 --table effects.txt` or `roll 1 100 -l effects.txt`
 
 # Features
 
 Roll Dem Bones has a number of command-line options.
 
-## Reporting Mode
-
-Roll Dem Bones can report die outcomes in two modes, tally and spread.
-
-**Spread** mode shows the values of all the rolled dice. It's the default mode.
-
-**Tally** mode shows the sum of the rolled dice.
-
-Every type of die has a default reporting mode, and they can safely be mixed. If you want to force a certain reporting mode, the `--mode {tally, spread}` option lets you do so. Additionally, the `--repeat-until` option *always* uses tally mode.
-
-The `--tally-above T` option changes the behavior of tally mode. It counts how many dice rolled `T` or higher, instead of summing the values of the die faces. Unless `--mode tally` is also used, the effects of Tally-Above are only applied to die types which use tally mode by default.
-
 ### Show Total Sum
 
-The `--sum-all` flag adds a line to the end of the output of each repetition which displays the total sum of all dice rolled in that repetition. It adds up the value of each die based on the die's reporting mode.
+The `--sum` flag adds a line to the end of the output of each repetition which displays the total sum of all dice rolled in that repetition. It adds up the value of each die based on the die's reporting mode.
 
 ## Repeat and Repeat-Until
 
@@ -73,10 +60,6 @@ When `--repeat N` is used alongside Repeat-Until, Roll Dem Bones will not make m
 ## Adding Dice
 
 The `--roll-again T` option adds a new die to the roll on every roll of `T` or higher.
-
-## Lines from a File
-
-The `--table FILE` option makes it easy to use random generator charts with Roll Dem Bones. When used, the result of each die is shown alongside the corresponding line from `FILE` (1 is the first line, 2 is the second line, etc.). In tally mode, the line shown corresponds with the final tally number (0 is the first line, 1 is the second, etc.). It doesn't work with Roll-Until.
 
 # Die Types
 

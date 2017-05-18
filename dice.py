@@ -2,118 +2,123 @@ import random
 import copy
 
 class Roller:
-    dice_bunch = []
-    results = None
-    raw_results = None
-    mode = None
+    def __init__(self, *dice, explode=None, tally_threshold=None, **kwargs):
+        self.results = None
+        self.raw_results = None
 
-    def __init__(self, args):
-        it = iter(args.dice)
-        self.dice_conf = zip(it, it)
+        self.rollable_dice = []
+        dice_iter = iter(dice)
+        dice_pairs = zip(dice_iter, dice_iter)
+        for pair in dice_pairs:
+            die_count = int(pair[0])
+            die_type = pair[1]
 
-        self.mode = args.mode if args.target is None else 'tally'
-
-        for pair in self.dice_conf:
-            dcount = int(pair[0])
-            dtype = pair[1]
-
-            if dtype == 'nwod':
-                self.dice_bunch.append([Nwod(args.explode, self.mode, args.success, args.rote, args.botch) for r in range(dcount)])
-            elif dtype in ['fudge', 'fate']:
-                self.dice_bunch.append([Fudge(args.explode, self.mode, args.success) for r in range(dcount)])
+            # handle special types first
+            if die_type == 'nwod':
+                new_set = RollSet(
+                        dice=[Nwod(explode=explode, tally_threshold=tally_threshold, **kwargs) for r in range(die_count)],
+                        result_mode='tally')
+            elif die_type in ['fudge', 'fate']:
+                new_set = RollSet(
+                    dice=[Fudge() for r in die_count],
+                    result_mode='tally')
             else:
                 try:
-                    dfaces = int(dtype)
-                    self.dice_bunch.append([Plain(dfaces, args.explode, self.mode, args.success) for r in range(dcount)])
+                    dfaces = int(die_type)
+                    new_set = RollSet(
+                        dice=[Plain(dfaces, explode=explode, tally_threshold=tally_threshold) for r in range(die_count)],
+                        result_mode='spread')
                 except ValueError:
-                    raise UnknownDieTypeException(dtype)
+                    raise UnknownDieTypeException(die_type)
+            self.rollable_dice.append(new_set)
 
     def __iter__(self):
         return iter(self.results)
-
-    def get_results(self):
-        """Get the last set of results from this roll's dice. If there are no results, do_roll() is executed first."""
-
-        if self.results == None:
-            self.do_roll()
-
-        return self.results
 
     def do_roll(self):
         self.results = []
         self.raw_results = []
 
-        for die_set in self.dice_bunch:
-            pair_result = []
-            for die in die_set:
-                die.roll()
+        for die_set in self.rollable_dice:
+            set_raw_result = []
+            set_result = []
 
-            die_type = die_set[0]
-            dice_transformed = die_type.apply_rules(die_set)
+            die_set.roll()
+            self.raw_results.append(die_set.raw_results)
+            self.results.append(die_set.get_result())
 
-            for die in dice_transformed:
-                if isinstance(die.get_result(), list):
-                    pair_result.extend(die.get_result())
-                else:
-                    pair_result.append(die.get_result())
-
-            roll_mode = die_type.counting_mode if self.mode is None else self.mode
-
-            self.raw_results.append(pair_result)
-            if roll_mode == 'tally':
-                self.results.append(sum(pair_result))
-            elif roll_mode == 'spread':
-                self.results.append(pair_result)
-
-class Die:
-    """Base dice class
-
-    This class can technically be used on its own, but it's intended to be subclassed to create specific die types.
-    """
-
-    defaults = {
-        'mode': 'spread',
-        'explode': None,
-        'success': None,
-    }
-    counting_mode = None
-    children = []
-    face = None
-    sides = 0
-    explode = 1
-    success = None
-
-    def __init__(self, new_sides, new_explode = None, forced_mode = None, success_target = None):
-        self.sides = int(new_sides)
-
-        if new_explode is None:
-            self.explode = self.sides + 1 if self.defaults['explode'] is None else self.defaults['explode']
-        else:
-            self.explode = new_explode
-
-        self.counting_mode = self.defaults['mode'] if forced_mode is None else forced_mode
-
-        self.success = self.defaults['success'] if success_target is None else success_target
+class RollSet:
+    def __init__(self, dice, result_mode='spread'):
+        self.dice = dice
+        self.result_mode = result_mode
+        self.raw_results = None
+        self.results = None
 
     def roll(self):
+        self.raw_results = []
+        self.results = []
+        for die in self.dice:
+            die.roll()
+            self.raw_results.extend(die.spread())
+            self.results.append(die.get_result(self.result_mode))
+
+    def get_result(self):
+        if self.result_mode == 'spread':
+            return self.results
+        elif self.result_mode == 'tally':
+            return sum(self.results)
+
+class Die:
+    """
+    Base dice class
+
+    This class can technically be used on its own, but it's intended to be
+    subclassed to create specific die types.
+    """
+
+    def __init__(self, sides, explode = None, tally_threshold = None):
+        self.sides = int(sides)
+
+        self.explode = explode
+        self.tally_threshold = tally_threshold
+
+        self.children = []
+        self.face = None
+
+    def roll(self):
+        self.children = []
         self.face = random.randint(1, self.sides)
+        self.make_children()
         self.roll_children()
 
+    def make_children(self):
+        """
+        Handle child dice for rerolls
+
+        By default, this handles simple exploding dice. When overriding, be sure
+        to call super.
+        """
+        if self.explode and self.face >= self.explode:
+            self.add_child()
+
     def roll_children(self):
-        self.children = []
-        self.child_results = []
+        """
+        Roll all child dice
 
-        if self.face >= self.explode:
-            child = self.make_child()
-
-            child.roll()
-            self.children.append(child)
+        Roll every die in the children array that has not already been rolled.
+        """
+        for die in self.children:
+            if die.face is None:
+                die.roll()
 
     def tally(self):
         if self.face is None:
             return 0
 
-        tally = self.face if self.success is None else int(self.face >= self.success)
+        if self.tally_threshold is None:
+            tally = self.face
+        else:
+            tally = int(self.face >= self.tally_threshold)
 
         for child in self.children:
             tally += child.tally()
@@ -131,55 +136,62 @@ class Die:
 
         return rolls
 
-    def get_result(self):
-        if self.counting_mode == 'spread':
+    def get_result(self, mode='spread'):
+        if mode == 'spread':
             return self.spread()
-        elif self.counting_mode == 'tally':
+        elif mode == 'tally':
             return self.tally()
 
-    def make_child(self):
-        return Plain(self.sides, self.explode, self.counting_mode)
-
-    def apply_rules(self, die_set):
-        """Apply special die-type-specific post processing to a group of dice objects.
-
-        Intended to be overridden by subclasses.
+    def add_child(self):
         """
+        Add a child die
 
-        return die_set
+        Calls make_child to actually create the new die. Convenience method that
+        isn't meant to be overwritten.
+        """
+        self.children.append(self.make_child())
+
+    def make_child(self):
+        """
+        Construct a child die
+
+        This must be overwritten by subclasses to define the sort of die that
+        should be added when another roll is needed.
+        """
+        pass
 
 class Plain(Die):
     """Represents a plain numeric die."""
 
-    def __init__(self, new_sides, new_explode = None, forced_mode = None, success_target = None):
-        super().__init__(new_sides, new_explode, forced_mode, success_target)
+    def make_child(self):
+        """
+        Construct a child die
 
-        # tally on our highest number by default
-        if self.success is None:
-            self.success = self.sides
+        This must be overwritten by subclasses to define the sort of die that
+        should be added when another roll is needed.
+        """
+        return Plain(self.sides, explode=self.explode, tally_threshold=self.tally_threshold)
 
 class Nwod(Die):
-    defaults = {
-        'mode': 'tally',
-        'explode': 10,
-        'success': 8,
-    }
-    child_class = 'Nwod'
-    rote = False
-    botch = False
+    def __init__(self, explode=10, tally_threshold=8, rote=False, botch=False, **kwargs):
+        if explode is None:
+            explode = 10
+        if tally_threshold is None:
+            tally_threshold = 8
+        if rote is None:
+            rote = False
+        if botch is None:
+            botch = False
 
-    def __init__(self, new_explode = 10, forced_mode = 'tally', success_target = 8, rote = False, botch = False):
-        super().__init__(10, new_explode, forced_mode, success_target)
+        super().__init__(10, explode=explode, tally_threshold=tally_threshold)
         self.rote = rote
         self.botch = botch
 
-    def roll(self):
-        self.face = random.randint(1, self.sides)
+    def make_children(self):
+        super().make_children()
 
-        if self.rote and self.face < self.success:
-            self.face = random.randint(1, self.sides)
-
-        super().roll_children()
+        if self.rote and self.face < self.tally_threshold:
+            self.add_child()
 
     def tally(self):
         if self.botch and self.face == 1:
@@ -188,28 +200,27 @@ class Nwod(Die):
         return super().tally()
 
     def make_child(self):
-        return Nwod(self.explode, self.counting_mode, self.success)
+        """
+        Create a re-rolled child die
+        """
+        return Nwod(explode=self.explode, tally_threshold=self.tally_threshold, rote=False, botch=self.botch)
+
+    def get_result(self, mode='tally'):
+        return super().get_result(mode)
 
 class Fudge(Die):
-    defaults = {
-        'mode': 'tally',
-        'explode': None,
-        'success': None,
-    }
-
-    def __init__(self, new_explode = None, forced_mode = 'tally', success_target = None):
-        super().__init__(3, new_explode, forced_mode, success_target)
+    def __init__(self, *args, **kwargs):
+        pass
 
     def roll(self):
         # Six sides of -1, -1, 0, 0, +1, +1 reduce trivially to three sides of -1, 0, +1. So that's what we use.
         self.face = random.randint(-1, 1)
-        super().roll_children()
 
     def tally(self):
         return self.face
 
-    def make_child(self):
-        return Fudge(self.explode, self.counting_mode, self.success)
+    def get_result(self, mode='tally'):
+        return super().get_result(mode)
 
 class UnknownDieTypeException(Exception):
     """Unrecognized die type"""
