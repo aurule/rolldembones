@@ -73,7 +73,7 @@ class Die:
     Base dice class
 
     This class can technically be used on its own, but it's intended to be
-    subclassed to create specific die types.
+    subclassed to create specific die types. For a generic die, use the Plain class.
     """
 
     def __init__(self, sides, explode = None, tally_threshold = None):
@@ -112,6 +112,7 @@ class Die:
                 die.roll()
 
     def tally(self):
+        """Add one to the total if the rolled value is greater than the threshold"""
         if self.face is None:
             return 0
 
@@ -126,6 +127,7 @@ class Die:
         return tally
 
     def spread(self):
+        """Make an array of our value and all child values"""
         if self.face is None:
             return 0
 
@@ -137,6 +139,12 @@ class Die:
         return rolls
 
     def get_result(self, mode='spread'):
+        """
+        Get the result of this die roll based on reporting mode
+
+        Arguments:
+            mode (str) One of 'spread' or 'tally'.
+        """
         if mode == 'spread':
             return self.spread()
         elif mode == 'tally':
@@ -173,6 +181,20 @@ class Plain(Die):
         return Plain(self.sides, explode=self.explode, tally_threshold=self.tally_threshold)
 
 class Nwod(Die):
+    """
+    Represents a d10 using the New World of Darkness dice rules.
+
+    The special rules:
+    * Tally mode is the default
+    * A success is counted on a roll of 8 or higher
+    * A roll of 10 rolls another die
+
+    Additional optional rules:
+    * Rote: When true, all dice in the initial pool that are below 8 add another
+            die to the pool, effectively re-rolling them. This property *does not*
+            get passed on to child dice.
+    * Botch: When true, dice that roll a 1 *subtract* one success from the tally.
+    """
     def __init__(self, explode=10, tally_threshold=8, rote=False, botch=False, **kwargs):
         if explode is None:
             explode = 10
@@ -209,6 +231,11 @@ class Nwod(Die):
         return super().get_result(mode)
 
 class Fudge(Die):
+    """
+    Represents a d6 with sides corresponding to a Fudge die: -1, -1, 0, 0, +1, +1
+
+    Defualt result mode is tally.
+    """
     def __init__(self, *args, **kwargs):
         pass
 
