@@ -209,6 +209,8 @@ class Nwod(Die):
         self.rote = rote
         self.botch = botch
 
+        #FIXME botches are not handled properly yet. They just add -1 to the tally and do not prevent rerolls like they should.
+
     def make_children(self):
         super().make_children()
 
