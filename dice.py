@@ -20,7 +20,7 @@ class Roller:
                         result_mode='tally')
             elif die_type in ['fudge', 'fate']:
                 new_set = RollSet(
-                    dice=[Fudge() for r in die_count],
+                    dice=[Fudge() for r in range(die_count)],
                     result_mode='tally')
             else:
                 try:
@@ -237,7 +237,7 @@ class Fudge(Die):
     Defualt result mode is tally.
     """
     def __init__(self, *args, **kwargs):
-        pass
+        super().__init__(6)
 
     def roll(self):
         # Six sides of -1, -1, 0, 0, +1, +1 reduce trivially to three sides of -1, 0, +1. So that's what we use.
